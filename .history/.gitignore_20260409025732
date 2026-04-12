@@ -20,6 +20,7 @@ ENV/
 *.ipynb_checkpoints
 
 # Data files (large or sensitive)
+*.csv
 *.xlsx
 *.xls
 *.parquet

@@ -1,3 +1,4 @@
+
 # Python
 __pycache__/
 *.py[cod]
@@ -20,6 +21,7 @@ ENV/
 *.ipynb_checkpoints
 
 # Data files (large or sensitive)
+*.csv
 *.xlsx
 *.xls
 *.parquet
