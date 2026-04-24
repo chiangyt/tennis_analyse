@@ -16,6 +16,7 @@ VIS_PATH.mkdir(exist_ok=True)
 df=pd.read_csv(DATA_PATH)
 df["tourney_date"]=pd.to_datetime(df["tourney_date"].astype(str),format="%Y%m%d",errors="coerce")
 print("Dataset shape:",df.shape)
+##------------------------------------------------------------------------------------------------------
 display(df.head())
 display(df.sample(5,random_state=42))
 overview=pd.DataFrame({"dtype":df.dtypes.astype(str),"missing":df.isna().sum(),"missing_pct":(df.isna().mean()*100).round(2),"unique_values":df.nunique(dropna=True)}).sort_values(["missing_pct","unique_values"],ascending=[False,False])
@@ -49,8 +50,10 @@ analysis_df["is_upset"]=(analysis_df["winner_rank"]>analysis_df["loser_rank"]).f
 analysis_df["total_aces"]=analysis_df["w_ace"]+analysis_df["l_ace"]
 analysis_df["total_double_faults"]=analysis_df["w_df"]+analysis_df["l_df"]
 analysis_df["month"]=analysis_df["tourney_date"].dt.month
+
 display(analysis_df[["winner_serve_win_pct","loser_serve_win_pct","winner_first_in_pct","loser_first_in_pct","serve_gap","rank_gap","is_upset"]].describe().T)
 fig,axes=plt.subplots(2,2,figsize=(18,12))
+##------------------------------------------------------------------------------------------------------
 surface_counts=analysis_df["surface"].value_counts(dropna=False)
 surface_counts.plot(kind="bar",color=["#2a9d8f","#e76f51","#264653","#8d99ae"],ax=axes[0,0])
 axes[0,0].set_title("Match Counts by Surface")
@@ -74,9 +77,12 @@ axes[1,1].set_xlabel("Month")
 axes[1,1].set_ylabel("Matches")
 plt.tight_layout()
 plt.savefig(VIS_PATH/"figure_1.png",dpi=300,bbox_inches="tight")
+
 plt.show()
+
 fig,axes=plt.subplots(2,2,figsize=(18,12))
 sns.histplot(analysis_df["minutes"].dropna(),bins=30,kde=True,color="#1d3557",ax=axes[0,0])
+##------------------------------------------------------------------------------------------------------
 axes[0,0].set_title("Distribution of Match Duration")
 axes[0,0].set_xlabel("Minutes")
 sns.boxplot(data=analysis_df,x="surface",y="minutes",palette="Set2",ax=axes[0,1])
@@ -119,6 +125,7 @@ axes[1,1].set_title("Correlation Heatmap")
 plt.tight_layout()
 plt.savefig(VIS_PATH/"figure_3.png",dpi=300,bbox_inches="tight")
 plt.show()
+##------------------------------------------------------------------------------------------------------
 player_results=pd.concat([analysis_df[["winner_name","surface"]].rename(columns={"winner_name":"player"}).assign(win=1),analysis_df[["loser_name","surface"]].rename(columns={"loser_name":"player"}).assign(win=0)],ignore_index=True)
 player_summary=player_results.groupby("player").agg(matches=("win","size"),wins=("win","sum"))
 player_summary["win_rate"]=player_summary["wins"]/player_summary["matches"]
@@ -150,6 +157,7 @@ axes[1,1].set_ylabel("")
 plt.tight_layout()
 plt.savefig(VIS_PATH/"figure_4.png",dpi=300,bbox_inches="tight")
 plt.show()
+##------------------------------------------------------------------------------------------------------
 upset_surface=analysis_df.groupby("surface")["is_upset"].mean().sort_values(ascending=False)
 upset_level=analysis_df.groupby("tourney_level")["is_upset"].mean().sort_values(ascending=False)
 fig,axes=plt.subplots(2,2,figsize=(18,12))
@@ -174,6 +182,7 @@ axes[1,1].set_ylabel("Minutes")
 plt.tight_layout()
 plt.savefig(VIS_PATH/"figure_5.png",dpi=300,bbox_inches="tight")
 plt.show()
+##------------------------------------------------------------------------------------------------------
 outlier_metrics=["minutes","serve_gap","rank_gap","total_aces","total_double_faults"]
 outlier_df=analysis_df.dropna(subset=outlier_metrics+["winner_name","loser_name","tourney_name","score"]).copy()
 for col in outlier_metrics:
