@@ -31,8 +31,11 @@ ENV/
 
 # IDE
 .vscode/
+.history/
 .idea/
 *.code-workspace
+
+
 
 # OS
 .DS_Store
