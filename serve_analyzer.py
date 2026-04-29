@@ -82,3 +82,79 @@ class ServeAnalyzer(MatchDataset):
                 f"  loser   mean={l_mean:.2f}  median={l_median:.2f}"
             )
         return "\n".join(lines)
+    
+    def print_summary(self, df, metrics):
+        for metric in metrics:
+            w_col = f"w_{metric}"
+            l_col = f"l_{metric}"
+
+            winner_mean = df[w_col].mean()
+            loser_mean = df[l_col].mean()
+            diff = winner_mean - loser_mean
+
+            print(f"\n{metric}")
+            print(f"Winner mean: {winner_mean:.3f}")
+            print(f"Loser mean: {loser_mean:.3f}")
+            print(f"Difference: {diff:.3f}")
+
+            if diff > 0.05:
+                print("Insight: Winners have a clear advantage in this metric.")
+            elif diff > 0.02:
+                print("Insight: Winners have a moderate advantage in this metric.")
+            else:
+                print("Insight: The difference between winners and losers is small.")
+    
+    def plot_density(self,df, metrics):
+        for metric in metrics:
+            plt.figure(figsize=(8,4))
+            df[f"w_{metric}"].plot(kind="kde", label = "Winner")
+            df[f"l_{metric}"].plot(kind="kde", label = "Loser")
+            
+            plt.title(metric)
+            plt.xlabel("Rate")
+            plt.ylabel("Density")
+            plt.legend()
+            plt.show()
+    
+    def interactive_menu(self):
+        print("WTA Serve Analysis")
+        print("\nAvailable metrics:")
+        print("1. First Serve In %")
+        print("2. First Serve Won %")
+        print("3. Second Serve Won %")
+        print("4. Serve Points Won %")
+        print("5. Serve Aggresive")
+        print("6. All metrics")
+
+        df = self.metrics_df.copy()
+        metric_choice = input("Choose metric option (1-6): ")
+
+        metric_map = {
+            "1": ["1stIn_pct"],
+            "2": ["1stWon_pct"],
+            "3": ["2ndWon_pct"],
+            "4": ["serve_won_pct"],
+            "5": ["serve_aggresive"],
+            "6": [
+                "1stIn_pct",
+                "1stWon_pct",
+                "2ndWon_pct",
+                "serve_won_pct",
+                "serve_aggresive"
+            ]
+        }
+
+        selected_metrics = metric_map.get(metric_choice, metric_map["6"])
+
+        print("\nOutput options:")
+        print("1. Summary statistics")
+        print("2. Density plot")
+        print("3. Both")
+
+        output_choice = input("Choose output option (1-3): ")
+
+        if output_choice in ["1", "3"]:
+            self.print_summary(df, selected_metrics)
+
+        if output_choice in ["2", "3"]:
+            self.plot_density(df, selected_metrics)

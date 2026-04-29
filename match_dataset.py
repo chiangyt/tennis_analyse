@@ -56,7 +56,7 @@ class MatchDataset:
                     f"L(svpt:{row['l_svpt']:.0f} 1stIn:{row['l_1stIn']:.0f} 1stWon:{row['l_1stWon']:.0f} 2ndWon:{row['l_2ndWon']:.0f})")
             lines.append(line)
         return "\n".join(lines)
-
+    
     def __str__(self):
         """Return a brief description of the dataset (match count and column count)."""
         return f"MatchDataset with {len(self.df)} matches and {len(self.df.columns)} columns."
