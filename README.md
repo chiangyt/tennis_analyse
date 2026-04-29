@@ -28,16 +28,7 @@ The project is designed for both script-based analysis and interactive explorati
 
 This project uses the following Python libraries:
 
-| Library | Purpose |
-| --- | --- |
-| `pandas` | CSV loading, data cleaning, filtering, and tabular analysis |
-| `numpy` | Numeric operations used during analysis |
-| `matplotlib` | Plot creation and figure export |
-| `seaborn` | Statistical visualizations |
-| `ipython` | Rich display support for notebook-style output |
-| `pytest` | Automated testing |
-
-All dependencies are listed in [`requirements.txt`](requirements.txt).
+panda, numpy, pytest, matplotlib
 
 ## Project Structure
 
