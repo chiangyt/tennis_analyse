@@ -203,3 +203,5 @@ Run all tests with:
 ```bash
 pytest
 ```
+## Main contributions
+Nazhi Guo:Responsible for visualizations, pytest setup, exception handling, and testing the interactive filter.
