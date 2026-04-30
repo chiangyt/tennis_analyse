@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 from IPython.display import display
+from match_dataset import MatchDataset
+from serve_analyzer import ServeAnalyzer
 sns.set_theme(style="whitegrid",context="talk")
 plt.rcParams["figure.figsize"]=(12,7)
 plt.rcParams["axes.spines.top"]=False
@@ -13,7 +15,7 @@ plt.rcParams["axes.spines.right"]=False
 DATA_PATH=Path("wta_matches_2024.csv")
 VIS_PATH=Path("visualization")
 VIS_PATH.mkdir(exist_ok=True)
-df=pd.read_csv(DATA_PATH)
+df=MatchDataset(DATA_PATH).df
 df["tourney_date"]=pd.to_datetime(df["tourney_date"].astype(str),format="%Y%m%d",errors="coerce")
 print("Dataset shape:",df.shape)
 ##------------------------------------------------------------------------------------------------------
@@ -28,21 +30,7 @@ print("Tournament level distribution:")
 display(df["tourney_level"].value_counts(dropna=False).rename_axis("tourney_level").to_frame("matches"))
 print("Round distribution:")
 display(df["round"].value_counts(dropna=False).rename_axis("round").to_frame("matches"))
-analysis_df=df.copy()
-analysis_df["winner_serve_win_pct"]=(analysis_df["w_1stWon"]+analysis_df["w_2ndWon"])/analysis_df["w_svpt"]
-analysis_df["loser_serve_win_pct"]=(analysis_df["l_1stWon"]+analysis_df["l_2ndWon"])/analysis_df["l_svpt"]
-analysis_df["winner_first_in_pct"]=analysis_df["w_1stIn"]/analysis_df["w_svpt"]
-analysis_df["loser_first_in_pct"]=analysis_df["l_1stIn"]/analysis_df["l_svpt"]
-analysis_df["winner_first_won_pct"]=analysis_df["w_1stWon"]/analysis_df["w_1stIn"]
-analysis_df["loser_first_won_pct"]=analysis_df["l_1stWon"]/analysis_df["l_1stIn"]
-winner_second_total=analysis_df["w_svpt"]-analysis_df["w_1stIn"]
-loser_second_total=analysis_df["l_svpt"]-analysis_df["l_1stIn"]
-analysis_df["winner_second_won_pct"]=analysis_df["w_2ndWon"]/winner_second_total
-analysis_df["loser_second_won_pct"]=analysis_df["l_2ndWon"]/loser_second_total
-analysis_df["winner_ace_rate"]=analysis_df["w_ace"]/analysis_df["w_svpt"]
-analysis_df["loser_ace_rate"]=analysis_df["l_ace"]/analysis_df["l_svpt"]
-analysis_df["winner_df_rate"]=analysis_df["w_df"]/analysis_df["w_svpt"]
-analysis_df["loser_df_rate"]=analysis_df["l_df"]/analysis_df["l_svpt"]
+analysis_df=df.join(ServeAnalyzer(DATA_PATH).metrics_df)
 analysis_df["serve_gap"]=analysis_df["winner_serve_win_pct"]-analysis_df["loser_serve_win_pct"]
 analysis_df["first_in_gap"]=analysis_df["winner_first_in_pct"]-analysis_df["loser_first_in_pct"]
 analysis_df["rank_gap"]=analysis_df["loser_rank"]-analysis_df["winner_rank"]

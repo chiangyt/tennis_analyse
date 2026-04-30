@@ -35,29 +35,21 @@ class ServeAnalyzer(MatchDataset):
         df = self.df.copy()
         metrics_df = pd.DataFrame()
 
-        # First serve in %
-        metrics_df["w_1stIn_pct"] = df["w_1stIn"] / df["w_svpt"]
-        metrics_df["l_1stIn_pct"] = df["l_1stIn"] / df["l_svpt"]
-
-        # First serve points won %
-        metrics_df["w_1stWon_pct"] = df["w_1stWon"] / df["w_1stIn"]
-        metrics_df["l_1stWon_pct"] = df["l_1stWon"] / df["l_1stIn"]
-
-        # Second serve total
         w_2nd_total = df["w_svpt"] - df["w_1stIn"]
         l_2nd_total = df["l_svpt"] - df["l_1stIn"]
 
-        # Second serve points won %
-        metrics_df["w_2ndWon_pct"] = df["w_2ndWon"] / w_2nd_total
-        metrics_df["l_2ndWon_pct"] = df["l_2ndWon"] / l_2nd_total
-
-        # Serve points won %
-        metrics_df["w_serve_won_pct"] = (df["w_1stWon"] + df["w_2ndWon"]) / df["w_svpt"]
-        metrics_df["l_serve_won_pct"] = (df["l_1stWon"] + df["l_2ndWon"]) / df["l_svpt"]
-
-        # Serve aggresive
-        metrics_df["w_serve_aggresive"] = (df["w_ace"] - df["w_df"]) / df["w_svpt"]
-        metrics_df["l_serve_aggresive"] = (df["l_ace"] - df["l_df"]) / df["l_svpt"]
+        metrics_df["winner_first_in_pct"]    = df["w_1stIn"] / df["w_svpt"]
+        metrics_df["loser_first_in_pct"]     = df["l_1stIn"] / df["l_svpt"]
+        metrics_df["winner_first_won_pct"]   = df["w_1stWon"] / df["w_1stIn"]
+        metrics_df["loser_first_won_pct"]    = df["l_1stWon"] / df["l_1stIn"]
+        metrics_df["winner_second_won_pct"]  = df["w_2ndWon"] / w_2nd_total
+        metrics_df["loser_second_won_pct"]   = df["l_2ndWon"] / l_2nd_total
+        metrics_df["winner_serve_win_pct"]   = (df["w_1stWon"] + df["w_2ndWon"]) / df["w_svpt"]
+        metrics_df["loser_serve_win_pct"]    = (df["l_1stWon"] + df["l_2ndWon"]) / df["l_svpt"]
+        metrics_df["winner_ace_rate"]        = df["w_ace"] / df["w_svpt"]
+        metrics_df["loser_ace_rate"]         = df["l_ace"] / df["l_svpt"]
+        metrics_df["winner_df_rate"]         = df["w_df"] / df["w_svpt"]
+        metrics_df["loser_df_rate"]          = df["l_df"] / df["l_svpt"]
 
         self.metrics_df = metrics_df
         return metrics_df
@@ -69,92 +61,36 @@ class ServeAnalyzer(MatchDataset):
             Dict mapping each metric name to a dict with winner_mean,
             loser_mean, winner_median, and loser_median values.
         """
-        metrics = ["1stIn_pct", "1stWon_pct", "2ndWon_pct", "serve_won_pct", "serve_aggresive"]
+        metrics = ["first_in_pct", "first_won_pct", "second_won_pct", "serve_win_pct", "ace_rate", "df_rate"]
         lines = []
         for metric in metrics:
-            w_mean   = self.metrics_df[f"w_{metric}"].mean()
-            l_mean   = self.metrics_df[f"l_{metric}"].mean()
-            w_median = self.metrics_df[f"w_{metric}"].median()
-            l_median = self.metrics_df[f"l_{metric}"].median()
+            w_mean   = self.metrics_df[f"winner_{metric}"].mean()
+            l_mean   = self.metrics_df[f"loser_{metric}"].mean()
+            w_median = self.metrics_df[f"winner_{metric}"].median()
+            l_median = self.metrics_df[f"loser_{metric}"].median()
             lines.append(
                 f"{metric}:\n"
                 f"  winner  mean={w_mean:.2f}  median={w_median:.2f}\n"
                 f"  loser   mean={l_mean:.2f}  median={l_median:.2f}"
             )
         return "\n".join(lines)
-    
-    def print_summary(self, df, metrics):
-        for metric in metrics:
-            w_col = f"w_{metric}"
-            l_col = f"l_{metric}"
 
-            winner_mean = df[w_col].mean()
-            loser_mean = df[l_col].mean()
-            diff = winner_mean - loser_mean
+    def plot_distributions(self):
+        """KDE plots comparing winner vs loser distribution for each serve metric."""
+        metrics = ["first_in_pct", "first_won_pct", "second_won_pct", "serve_win_pct", "ace_rate", "df_rate"]
+        labels  = ["1st Serve In %", "1st Serve Won %", "2nd Serve Won %", "Serve Win %", "Ace Rate", "DF Rate"]
 
-            print(f"\n{metric}")
-            print(f"Winner mean: {winner_mean:.3f}")
-            print(f"Loser mean: {loser_mean:.3f}")
-            print(f"Difference: {diff:.3f}")
+        fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+        fig.suptitle("Serve Metric Distributions: Winners vs Losers", fontsize=14)
 
-            if diff > 0.05:
-                print("Insight: Winners have a clear advantage in this metric.")
-            elif diff > 0.02:
-                print("Insight: Winners have a moderate advantage in this metric.")
-            else:
-                print("Insight: The difference between winners and losers is small.")
-    
-    def plot_density(self,df, metrics):
-        for metric in metrics:
-            plt.figure(figsize=(8,4))
-            df[f"w_{metric}"].plot(kind="kde", label = "Winner")
-            df[f"l_{metric}"].plot(kind="kde", label = "Loser")
-            
-            plt.title(metric)
-            plt.xlabel("Rate")
-            plt.ylabel("Density")
-            plt.legend()
-            plt.show()
-    
-    def interactive_menu(self):
-        print("WTA Serve Analysis")
-        print("\nAvailable metrics:")
-        print("1. First Serve In %")
-        print("2. First Serve Won %")
-        print("3. Second Serve Won %")
-        print("4. Serve Points Won %")
-        print("5. Serve Aggresive")
-        print("6. All metrics")
+        for ax, metric, label in zip(axes.flat, metrics, labels):
+            w = self.metrics_df[f"winner_{metric}"].dropna()
+            l = self.metrics_df[f"loser_{metric}"].dropna()
+            w.plot(kind="kde", ax=ax, label="Winner", color="#2a9d8f")
+            l.plot(kind="kde", ax=ax, label="Loser",  color="#e76f51")
+            ax.set_title(label)
+            ax.set_xlabel("Rate")
+            ax.legend()
 
-        df = self.metrics_df.copy()
-        metric_choice = input("Choose metric option (1-6): ")
-
-        metric_map = {
-            "1": ["1stIn_pct"],
-            "2": ["1stWon_pct"],
-            "3": ["2ndWon_pct"],
-            "4": ["serve_won_pct"],
-            "5": ["serve_aggresive"],
-            "6": [
-                "1stIn_pct",
-                "1stWon_pct",
-                "2ndWon_pct",
-                "serve_won_pct",
-                "serve_aggresive"
-            ]
-        }
-
-        selected_metrics = metric_map.get(metric_choice, metric_map["6"])
-
-        print("\nOutput options:")
-        print("1. Summary statistics")
-        print("2. Density plot")
-        print("3. Both")
-
-        output_choice = input("Choose output option (1-3): ")
-
-        if output_choice in ["1", "3"]:
-            self.print_summary(df, selected_metrics)
-
-        if output_choice in ["2", "3"]:
-            self.plot_density(df, selected_metrics)
+        plt.tight_layout()
+        plt.show()
