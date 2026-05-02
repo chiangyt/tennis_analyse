@@ -7,6 +7,7 @@ from match_dataset import MatchDataset
 DEFAULT_DATASET=Path("wta_matches_2024.csv")
 
 def _normalize_text_series(series:pd.Series)->pd.Series:
+    """Normalize a text Series to lowercase, stripped strings with NaN filled as empty."""
     return series.fillna("").astype(str).str.casefold().str.strip()
 
 
@@ -83,6 +84,7 @@ def prompt_choice(label:str,options:list[str])->str|None:
         print("Invalid selection. Enter a listed number.")
 
 def prompt_limit(default:int=10)->int:
+    """Prompt the user for a maximum number of matches to display."""
     print()
     while True:
         raw=input(f"Max number of matches to show [{default}]: ").strip()
@@ -92,34 +94,41 @@ def prompt_limit(default:int=10)->int:
             return int(raw)
         print("Invalid number. Enter a positive integer.")
 
-def prompt_player(dataset:MatchDataset,label:str)->str|None:
-    """Show matching players as a numbered list after an optional keyword search."""
-    print(f"\n{label} (press Enter to skip, or type a keyword to search):")
+def prompt_player_filter(dataset:MatchDataset)->dict[str,str|None]:
+    """Search for a player by keyword, then choose their match role."""
+    print("\nPlayer filter (press Enter to skip, or type a keyword to search):")
     keyword=input("Keyword: ").strip()
     if not keyword:
-        return None
-    all_players=dataset.options("winner_name")+dataset.options("loser_name")
+        return {"player":None,"winner":None,"loser":None}
+    all_players=set(dataset.options("winner_name")) | set(dataset.options("loser_name"))
     matches=sorted({p for p in all_players if keyword.casefold() in p.casefold()})
     if not matches:
         print("No matching players found. Skipping filter.")
-        return None
-    return prompt_choice(f"Matching players for '{keyword}'",matches)
+        return {"player":None,"winner":None,"loser":None}
+    selected=prompt_choice(f"Matching players for '{keyword}'",matches)
+    if selected is None:
+        return {"player":None,"winner":None,"loser":None}
+    role=prompt_choice("Role",["Any (winner or loser)","Winner only","Loser only"])
+    if role=="Winner only":
+        return {"player":None,"winner":selected,"loser":None}
+    if role=="Loser only":
+        return {"player":None,"winner":None,"loser":selected}
+    return {"player":selected,"winner":None,"loser":None}
 
 def prompt_filters(dataset:MatchDataset)->dict[str,str|int|None]:
     """Prompt the user for step-by-step match filters."""
     print("Available filters — press Enter at any step to skip (shows all).")
 
-    player=prompt_player(dataset,"Player (winner or loser)")
+    player_filter=prompt_player_filter(dataset)
     surface=prompt_choice("Surface",dataset.options("surface"))
     round_name=prompt_choice("Round",dataset.options("round"))
     tourney_level=prompt_choice("Tournament level",dataset.options("tourney_level"))
-    winner=prompt_player(dataset,"Winner")
-    loser=prompt_player(dataset,"Loser")
     limit=prompt_limit()
 
-    return {"player":player,"winner":winner,"loser":loser,"surface":surface,"round_name":round_name,"tourney_level":tourney_level,"limit":limit}
+    return {**player_filter,"surface":surface,"round_name":round_name,"tourney_level":tourney_level,"limit":limit}
 
 def main()->None:
+    """Load the default dataset, prompt for filters, and print matching matches."""
     dataset=MatchDataset(DEFAULT_DATASET)
     filters=prompt_filters(dataset)
     filtered=filter_matches(dataset.df,**filters)

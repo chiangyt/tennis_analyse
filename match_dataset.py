@@ -35,6 +35,9 @@ class MatchDataset:
         """
         df = df.drop_duplicates()
         if cols:
+            missing = set(cols) - set(df.columns)
+            if missing:
+                raise KeyError(f"Columns not found in dataset: {sorted(missing)}")
             df = df[cols]
         df = df.dropna(how="all")
         return df

@@ -7,7 +7,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from interactive_filter import filter_matches, load_dataset, prompt_choice, prompt_limit
+from interactive_filter import filter_matches, prompt_choice, prompt_limit
+from match_dataset import MatchDataset
 from serve_analyzer import ServeAnalyzer
 
 
@@ -21,7 +22,7 @@ def test_load_dataset_removes_duplicate_and_all_null_rows(tmp_path: Path) -> Non
         ]
     ).to_csv(path, index=False)
 
-    loaded = load_dataset(path)
+    loaded = MatchDataset(path).df
 
     assert len(loaded) == 1
 
@@ -87,6 +88,18 @@ def test_serve_analyzer_handles_zero_division_as_nan(tmp_path: Path) -> None:
 
     row = ServeAnalyzer(path).metrics_df.iloc[0]
 
-    assert row["w_1stIn_pct"] == 1.0
-    assert pd.isna(row["w_2ndWon_pct"])
-    assert pd.isna(row["l_1stIn_pct"])
+    assert row["winner_first_in_pct"] == 1.0
+    assert pd.isna(row["winner_second_won_pct"])
+    assert pd.isna(row["loser_first_in_pct"])
+
+
+def test_match_dataset_raises_on_missing_columns(tmp_path: Path) -> None:
+    path = tmp_path / "sample.csv"
+    pd.DataFrame([{"winner_name": "A", "loser_name": "B"}]).to_csv(path, index=False)
+
+    try:
+        MatchDataset(path, cols=["winner_name", "nonexistent_col"])
+        assert False, "Expected KeyError"
+    except KeyError as e:
+        assert "nonexistent_col" in str(e)
+

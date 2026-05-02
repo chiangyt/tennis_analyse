@@ -26,7 +26,7 @@ class ServeAnalyzer(MatchDataset):
             - 1st serve points won percentage
             - 2nd serve points won percentage
             - Overall serve points won percentage
-            - Serve aggressiveness (ace - double fault ratio)
+            - Ace rate and double-fault rate
 
         Returns:
             DataFrame containing all computed serve metrics.

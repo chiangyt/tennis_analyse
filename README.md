@@ -1,39 +1,52 @@
 # Tennis Match Analysis
 
+## Team Members
 
-## Team Member:
-Yuting Jiang, yjiang69@stevens.edu, Stevens ID:20030015
-Nazhi Guo, nguo2@stevens.edu, Stevens ID: 20036725
+| Name | Email | Stevens ID |
+|------|-------|------------|
+| Yuting Jiang | yjiang69@stevens.edu | 20030015 |
+| Nazhi Guo | nguo2@stevens.edu | 20036725 |
+
 ## Project Overview
-**Tennis Match Analysis** is a Python data analysis project for exploring the 2024 WTA match dataset. The project loads raw match records from `wta_matches_2024.csv`, mean function includes: data cleaning,  calculates serve-performance metrics, calculates serve-performance metrics, compares winner and loser, and generates visual, and can output the filter.
 
-The project is designed for both script-based analysis and interactive exploration. It includes reusable analyzer classes, an interactive command-line filter, a visualization script, a Jupyter notebook, and automated tests.
+**Tennis Match Analysis** is a Python data analysis project that investigates the relationship between serve quality and match outcomes in the 2024 WTA season. Using match records from `wta_matches_2024.csv`, the project cleans raw data, computes per-match serve performance metrics for winners and losers, compares them statistically, and visualizes the findings. An interactive command-line filter allows users to query specific matches by player, surface, round, and tournament level.
 
 ## Main Features
 
-- Load and clean WTA match data from CSV files.
-- Preview match-level serve statistics.
-- Calculate winner and loser serve metrics, including:
+- Load and clean WTA match data from CSV files, with validation for missing columns and file errors.
+- Preview match-level serve statistics with a configurable row limit.
+- Calculate serve performance metrics for winners and losers:
   - First-serve-in percentage
   - First-serve-points-won percentage
   - Second-serve-points-won percentage
   - Overall serve-points-won percentage
-  - Serve aggressiveness based on aces and double faults
-- Compare winner-minus-loser serve differences for each match.
-- Filter matches interactively by player, winner, loser, surface, round, tournament level, and result limit.
-- Generate exploratory visualizations and save figures to the `visualization/` folder.
+  - Ace rate and double-fault rate
+- Compare winner-minus-loser serve differences per match and compute winner advantage rates.
+- Visualize serve metric distributions (KDE) and advantage rates across all matches.
+- Filter matches interactively by player keyword search, surface, round, tournament level, and result limit.
+- Generate exploratory visualizations saved to the `visualization/` folder.
 - Validate core behavior with pytest tests.
 
 ## Dependencies
 
-This project uses the following Python libraries:
+```
+pandas
+numpy
+matplotlib
+seaborn
+pytest
+```
 
-panda, numpy, pytest, matplotlib
+Install all dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Project Structure
 
 ```text
-tennis_analyse/
+project/
 ├── README.md
 ├── requirements.txt
 ├── wta_matches_2024.csv
@@ -44,12 +57,7 @@ tennis_analyse/
 ├── interactive_filter.py
 ├── Visualizations.py
 ├── visualization/
-│   ├── figure_1.png
-│   ├── figure_2.png
-│   ├── figure_3.png
-│   ├── figure_4.png
-│   ├── figure_5.png
-│   └── figure_6.png
+│   ├── figure_1.png  –  figure_6.png
 └── tests/
     └── test_interactive_filter.py
 ```
@@ -58,40 +66,39 @@ tennis_analyse/
 
 ### `match_dataset.py`
 
-Defines the `MatchDataset` base class. It loads a CSV dataset, removes duplicate rows, drops fully empty rows, optionally keeps selected columns, and provides a text preview of match-level serve statistics.
+Defines the `MatchDataset` base class. Loads a CSV file, removes duplicate rows, validates and selects requested columns, and drops fully-null rows. Provides `preview_matches(limit)` for a formatted text summary and `options(column)` for sorted unique values of any column. Raises `FileNotFoundError` for missing files and `KeyError` for missing columns.
 
 ### `serve_analyzer.py`
 
-Defines `ServeAnalyzer`, which extends `MatchDataset`. It calculates serve-performance metrics for winners and losers, then provides grouped summary statistics such as mean and median values.
+Defines `ServeAnalyzer`, which extends `MatchDataset`. Computes six serve-performance metrics (first-in %, first-won %, second-won %, serve-win %, ace rate, df rate) for both winners and losers. Provides `compute_group_state()` for grouped mean/median summary and `plot_distributions()` for KDE comparison plots.
 
 ### `paired_analyzer.py`
 
-Defines `PairedMatchAnalyzer`, which also extends `MatchDataset`. It calculates per-match differences between winner and loser serve metrics, making it easier to evaluate how serve performance relates to winning.
+Defines `PairedMatchAnalyzer`, which extends `MatchDataset`. Calculates per-match winner-minus-loser serve differences and summarises the mean difference and winner advantage rate for each metric. Provides `plot_advantage()` for a grouped bar chart and advantage rate visualization.
 
 ### `interactive_filter.py`
 
-Provides an interactive command-line tool for filtering matches. Users can search by player name, winner, loser, surface, round, tournament level, and maximum number of displayed results.
+Interactive command-line tool for filtering matches. Users search for players by keyword (results shown as a numbered list using set union across winner and loser names), then filter by surface, round, and tournament level. Skipping any step returns all matches for that criterion. Run directly with `python interactive_filter.py`.
 
 ### `Visualizations.py`
 
-Runs exploratory data analysis and creates six visualization images. The charts include surface distribution, tournament levels, match duration, serve performance, player win rates, upset rates, ranking gaps, and outlier views.
+Runs exploratory data analysis and generates six figures covering match distribution, duration, serve performance comparisons, player win rates, upset patterns, and statistical outliers. Saves all figures to `visualization/`.
 
 ### `tennis_match_analyse.ipynb`
 
-A Jupyter notebook version of the analysis workflow. It is useful for step-by-step exploration and presentation.
+Main Jupyter notebook presenting the full analysis workflow: dataset overview, serve performance analysis, paired match comparison with visualizations, and an interactive match filter.
 
 ### `tests/test_interactive_filter.py`
 
-Contains pytest tests for dataset loading, match filtering, input validation, and serve metric edge cases.
+Six pytest test cases covering dataset loading and deduplication, missing-column error handling, filter behaviour with absent columns, interactive prompt input validation, and serve metric division-by-zero edge cases.
 
 ## How to Run the Program
 
-### 1. Clone or Open the Project
-
-Open a terminal in the project root directory:
+### 1. Clone the Repository
 
 ```bash
-cd tennis_analyse
+git clone <repository-url>
+cd project
 ```
 
 ### 2. Create a Virtual Environment
@@ -100,14 +107,12 @@ cd tennis_analyse
 python -m venv .venv
 ```
 
-Activate the environment:
+Activate:
 
 ```bash
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
-```
 
-```bash
 # macOS / Linux
 source .venv/bin/activate
 ```
@@ -118,25 +123,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run the Interactive Match Filter
+### 4. Run the Jupyter Notebook
+
+Open `tennis_match_analyse.ipynb` in Jupyter and run all cells top to bottom.
+
+### 5. Run the Interactive Match Filter (CLI)
 
 ```bash
 python interactive_filter.py
 ```
 
-The program will ask for filter options, then print matching WTA matches in a compact text format.
+The program prompts for filter options step by step. Press Enter at any step to skip and include all matches for that criterion.
 
-### 5. Run the Visualization Script
+### 6. Run the Visualization Script
 
 ```bash
 python Visualizations.py
 ```
 
-This script reads `wta_matches_2024.csv`, performs exploratory analysis, and saves output charts into the `visualization/` directory.
+Saves six chart files to the `visualization/` directory.
 
-### 6. Use the Analyzer Classes in Python
-
-Example:
+### 7. Use Analyzer Classes Directly
 
 ```python
 from serve_analyzer import ServeAnalyzer
@@ -144,12 +151,14 @@ from paired_analyzer import PairedMatchAnalyzer
 
 serve = ServeAnalyzer("wta_matches_2024.csv")
 print(serve.compute_group_state())
+serve.plot_distributions()
 
 paired = PairedMatchAnalyzer("wta_matches_2024.csv")
 print(paired.summary())
+paired.plot_advantage()
 ```
 
-### 7. Run Tests
+### 8. Run Tests
 
 ```bash
 pytest
@@ -157,42 +166,24 @@ pytest
 
 ## Dataset
 
-The project expects the dataset file to be available at:
-
-```text
-wta_matches_2024.csv
-```
-
-The CSV should contain WTA match records with columns such as player names, surface, round, tournament information, score, ranking, match duration, and serve statistics for winners and losers.
-
-## Output
-
-Running the visualization script creates or updates the following files:
-
-```text
-visualization/figure_1.png
-visualization/figure_2.png
-visualization/figure_3.png
-visualization/figure_4.png
-visualization/figure_5.png
-visualization/figure_6.png
-```
-
-These figures summarize match distribution, duration, serve performance, player results, upset patterns, and statistical outliers.
+The project expects `wta_matches_2024.csv` in the project root. The file contains 2024 WTA match records including player names, surface, round, tournament information, score, ranking, match duration, and serve statistics for winners and losers.
 
 ## Testing
 
-The test suite checks important project behavior, including:
+The test suite covers:
 
-- Duplicate and empty-row removal during dataset loading
-- Optional filter handling when columns are missing
-- Interactive input validation
-- Serve metric behavior when division-by-zero cases appear
-
-Run all tests with:
+- Duplicate and all-null row removal during dataset loading
+- `KeyError` raised when requested columns are missing from the dataset
+- Filter behaviour when optional columns are absent from the DataFrame
+- Interactive prompt retries on invalid input
+- Serve metric NaN propagation on division-by-zero edge cases
 
 ```bash
-pytest
+pytest tests/ -v
 ```
-## Main contributions
-Nazhi Guo:Responsible for visualizations, pytest setup, exception handling, and testing the interactive filter.
+
+## Main Contributions
+
+**Yuting Jiang:** Designed and implemented the core class hierarchy (`MatchDataset`, `ServeAnalyzer`, `PairedMatchAnalyzer`),  and the Jupyter notebook structure. Responsible for serve metric calculations, paired comparison analysis, visualization methods in the analyzer classes, and overall project architecture.
+
+**Nazhi Guo:** Responsible for the exploratory visualization script (`Visualizations.py`), pytest setup and test cases(`test_interactive_filter.py`), exception handling design, and integration testing of the interactive filter(`interactive_filter.py`).
