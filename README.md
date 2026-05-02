@@ -125,40 +125,31 @@ pip install -r requirements.txt
 
 ### 4. Run the Jupyter Notebook
 
-Open `tennis_match_analyse.ipynb` in Jupyter and run all cells top to bottom.
+Open `tennis_match_analyse.ipynb` in Jupyter and run all cells top to bottom. This is the main entry point — it covers the full analysis workflow, including serve performance analysis, paired match comparison, supporting visualizations, and an interactive match filter.
 
-### 5. Run the Interactive Match Filter (CLI)
+### 5. Run Standalone Scripts (Optional)
+
+The following scripts can also be run independently:
 
 ```bash
+# Interactive match filter (CLI)
 python interactive_filter.py
-```
 
-The program prompts for filter options step by step. Press Enter at any step to skip and include all matches for that criterion.
-
-### 6. Run the Visualization Script
-
-```bash
+# Exploratory visualization script — saves figures to visualization/
 python Visualizations.py
-```
 
-Saves six chart files to the `visualization/` directory.
-
-### 7. Use Analyzer Classes Directly
-
-```python
+# Use analyzer classes directly
+python -c "
 from serve_analyzer import ServeAnalyzer
 from paired_analyzer import PairedMatchAnalyzer
-
-serve = ServeAnalyzer("wta_matches_2024.csv")
+serve = ServeAnalyzer('wta_matches_2024.csv')
 print(serve.compute_group_state())
-serve.plot_distributions()
-
-paired = PairedMatchAnalyzer("wta_matches_2024.csv")
+paired = PairedMatchAnalyzer('wta_matches_2024.csv')
 print(paired.summary())
-paired.plot_advantage()
+"
 ```
 
-### 8. Run Tests
+### 6. Run Tests
 
 ```bash
 pytest
