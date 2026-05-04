@@ -125,7 +125,11 @@ pip install -r requirements.txt
 
 ### 4. Run the Jupyter Notebook
 
-Open `tennis_match_analyse.ipynb` in Jupyter and run all cells top to bottom. This is the main entry point — it covers the full analysis workflow, including serve performance analysis, paired match comparison, supporting visualizations, and an interactive match filter.
+```bash
+jupyter notebook tennis_match_analyse.ipynb
+```
+
+Run all cells top to bottom. This is the main entry point — it covers the full analysis workflow, including serve performance analysis, paired match comparison, supporting visualizations, and an interactive match filter.
 
 ### 5. Run Standalone Scripts (Optional)
 

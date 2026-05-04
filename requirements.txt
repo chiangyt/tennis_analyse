@@ -4,3 +4,4 @@ pandas
 pytest
 seaborn
 ipython
+jupyter
