@@ -59,4 +59,4 @@ class PairedMatchAnalyzer(MatchDataset):
                 "mean_diff": round(series.mean(), 4),
                 "winner_advantage_rate": round((series > 0).mean(), 4),
             }
-        return pd.DataFrame(records).T
+        return 

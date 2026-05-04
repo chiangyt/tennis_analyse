@@ -97,8 +97,8 @@ Six pytest test cases covering dataset loading and deduplication, missing-column
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd project
+git clone https://github.com/chiangyt/tennis_analyse
+cd tennis_analyse
 ```
 
 ### 2. Create a Virtual Environment
